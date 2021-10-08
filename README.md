@@ -1,4 +1,8 @@
-# Hi there
+# Hi there! 
+
+[id]: https://raw.githubusercontent.com/yyoel/yyoel/main/asset/wave.gif "Optional title attribute"
+
+![Alt text][id]
 
 <!--
 **yyoel/yyoel** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
