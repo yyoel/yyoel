@@ -1,9 +1,9 @@
-# Hi there! 
+<!-- markdownlint-disable MD033 MD013 -->
+# Hi there! <img src="https://raw.githubusercontent.com/MartinHeinz/MartinHeinz/master/wave.gif" width="30px">
 
-[id]: https://raw.githubusercontent.com/yyoel/yyoel/main/asset/wave.gif "Optional title attribute"
-
-![Alt text][id]
-
+<!-- markdownlint-enable MD033 MD013 -->
+My name is Yulius and I'm a Big Data Engineer. I'm from Indonesia,
+living in Tangerang Selatan and currently working at BFI Finance
 <!--
 **yyoel/yyoel** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
