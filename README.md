@@ -4,6 +4,7 @@
 - 🧑🏽‍💻 I'm a Big Data Engineer.
 - 🇮🇩 I'm from Indonesia, living in Tangerang Selatan.
 - <img src="https://raw.githubusercontent.com/yyoel/yyoel/main/asset/images/bfi-finance-logo.jpeg" width="15px"> Currently working at BFI Finance.
+- 🌱 Currently learning more about DataOps and all of Data Engineer tools.
 
 ## 🛠 Tools & Tech
 
