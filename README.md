@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD033 MD013 MD022 -->
-<h1 align="center"><img src="https://raw.githubusercontent.com/yyoel/yyoel/main/asset/gif/wave.gif" width="30px"> Hello! I'm Athul.</h1>
+<h1 align="center"><img src="https://raw.githubusercontent.com/yyoel/yyoel/main/asset/gif/wave.gif" width="30px"> Hello! I'm Yulius.</h1>
 
 - 🧑🏽‍💻 I'm a Big Data Engineer.
 - 🇮🇩 I'm from Indonesia, living in Tangerang Selatan.
