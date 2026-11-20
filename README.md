@@ -100,6 +100,12 @@ Data engineer working in financial services (insurance, fintech and multi-financ
 | Project | What it is | Stack | Last push |
 | --- | --- | --- | --- |
 | [**ulauncher-pomodoro**](https://github.com/yyoel/ulauncher-pomodoro) | A full-featured Pomodoro timer extension for Ulauncher with focus and break cycles, desktop notifications, and audio alerts. | Python | 2026-08-21 |
+
+**Contributing to other projects**
+
+| Project | Pull request | Status |
+| --- | --- | --- |
+| [**linuxmint/cinnamon-spices-extensions**](https://github.com/linuxmint/cinnamon-spices-extensions) | [mint-dock@hilyxx: Add 'Follow the mouse across screens' option and fix screen picker order](https://github.com/linuxmint/cinnamon-spices-extensions/pull/1232) | 🟢 Open |
 <!--END_PROJECTS-->
 
 ## 👾 Contributions under attack

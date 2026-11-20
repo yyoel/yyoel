@@ -3,7 +3,9 @@
 
 A small ship flies under the grid from left to right, stops under every
 week that has contributions and shoots each green cell, which flashes and
-turns empty. When the sweep ends the grid refills and the loop restarts.
+turns empty. After the sweep it drifts around the grid, corner to corner
+(up the right side, across the top, down the left side), turning to face
+where it is heading, while the grid refills; then the loop restarts.
 
 Writes a light and a dark SVG into the output directory (default: dist/).
 Needs GITHUB_TOKEN (the Actions token is enough) for the GraphQL API.
@@ -20,10 +22,11 @@ OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "dist"
 CELL, GAP = 11, 3
 PITCH = CELL + GAP
 COLS, ROWS = 53, 7
-PAD_X, PAD_Y = 16, 12
+PAD_X, PAD_Y = 36, 36  # room for the ship to fly around the grid
 GRID_W, GRID_H = COLS * PITCH - GAP, ROWS * PITCH - GAP
-SHIP_Y = PAD_Y + GRID_H + 22  # top of the ship
-WIDTH, HEIGHT = GRID_W + 2 * PAD_X, SHIP_Y + 22
+SHIP_Y = PAD_Y + GRID_H + 22  # top of the ship in the bottom lane
+TOP_Y = 8                     # top of the ship in the top lane
+WIDTH, HEIGHT = GRID_W + 2 * PAD_X, SHIP_Y + 24
 
 # Timing (seconds)
 MOVE = 0.09         # ship travel per column
@@ -31,7 +34,8 @@ FIRE_GAP = 0.16     # time between shots in one column
 BULLET_SPEED = 520  # px/s
 FLASH = 0.12        # how long a hit cell flashes
 START_HOLD = 0.8    # pause before the ship starts
-END_HOLD = 2.0      # pause after the last hit, before the reset
+DRIFT_SPEED = 230   # px/s while drifting around the grid
+TURN = 0.35         # time to turn 90 degrees at a corner
 
 LEVELS = ["NONE", "FIRST_QUARTILE", "SECOND_QUARTILE", "THIRD_QUARTILE", "FOURTH_QUARTILE"]
 PALETTES = {
@@ -58,6 +62,9 @@ SHIP = [
 ]
 PX = 2
 SHIP_W = len(SHIP[0]) * PX
+SHIP_H = len(SHIP) * PX
+LEFT_X = PAD_X - SHIP_W - 8          # left corner lane
+RIGHT_X = PAD_X + GRID_W + 8         # right corner lane
 
 QUERY = """
 query($login: String!) {
@@ -106,15 +113,18 @@ def ship_x(c):
 
 
 def plan(grid):
-    """Return ship stops, shots and total loop length (all times in seconds)."""
+    """Ship keyframes, shots, refill window and loop length (seconds).
+
+    Ship keyframes are (time, x, y, angle, ease) where ease is the CSS timing
+    function for the segment that starts at that keyframe.
+    """
     t = START_HOLD
-    stops = [(0.0, ship_x(-2))]  # ship waits just left of the grid
-    stops.append((t, ship_x(-2)))
+    stops = [(0.0, LEFT_X, SHIP_Y, 0, "linear"), (t, LEFT_X, SHIP_Y, 0, "linear")]
     shots = []  # (col, row, fire_time, hit_time)
     last_hit = t
     for c, col in enumerate(grid):
         t += MOVE
-        stops.append((t, ship_x(c)))
+        stops.append((t, ship_x(c), SHIP_Y, 0, "linear"))
         targets = [r for r in range(ROWS - 1, -1, -1) if col[r]]  # bottom row first
         for i, r in enumerate(targets):
             fire = t + i * FIRE_GAP
@@ -124,11 +134,30 @@ def plan(grid):
             last_hit = max(last_hit, hit)
         if targets:
             t += len(targets) * FIRE_GAP
-            stops.append((t, ship_x(c)))
-    t += MOVE * 3
-    stops.append((t, ship_x(COLS + 1)))  # fly off to the right
-    total = max(t, last_hit) + END_HOLD
-    return stops, shots, total
+            stops.append((t, ship_x(c), SHIP_Y, 0, "linear"))
+
+    # Drift around the grid: bottom-right -> top-right -> top-left -> bottom-left.
+    ease = "ease-in-out"
+    t = max(t, last_hit) + 0.3
+    x = ship_x(COLS - 1)
+    stops.append((t, x, SHIP_Y, 0, ease))
+    t += (RIGHT_X - x) / DRIFT_SPEED
+    stops.append((t, RIGHT_X, SHIP_Y, 0, ease))
+    t += (SHIP_Y - TOP_Y) / DRIFT_SPEED
+    stops.append((t, RIGHT_X, TOP_Y, 0, ease))
+    t += TURN
+    stops.append((t, RIGHT_X, TOP_Y, -90, ease))
+    refill_start = t
+    t += (RIGHT_X - LEFT_X) / DRIFT_SPEED
+    refill_end = t
+    stops.append((t, LEFT_X, TOP_Y, -90, ease))
+    t += TURN
+    stops.append((t, LEFT_X, TOP_Y, -180, ease))
+    t += (SHIP_Y - TOP_Y) / DRIFT_SPEED
+    stops.append((t, LEFT_X, SHIP_Y, -180, ease))
+    t += TURN
+    stops.append((t, LEFT_X, SHIP_Y, -360, "linear"))  # same as 0deg: seamless loop
+    return stops, shots, (refill_start, refill_end), t
 
 
 def pct(t, total):
@@ -137,7 +166,7 @@ def pct(t, total):
 
 def render(grid, theme):
     pal = PALETTES[theme]
-    stops, shots, total = plan(grid)
+    stops, shots, (refill_start, refill_end), total = plan(grid)
     css, body = [], []
 
     css.append(
@@ -163,8 +192,8 @@ def render(grid, theme):
             css.append(
                 f"@keyframes {name}{{0%,{pct(hit, total)}{{fill:{colour}}}"
                 f"{pct(hit + 0.02, total)},{pct(hit + FLASH, total)}{{fill:{pal['flash']}}}"
-                f"{pct(hit + FLASH + 0.02, total)},{pct(total - 0.6, total)}{{fill:{empty}}}"
-                f"100%{{fill:{colour}}}}}"
+                f"{pct(hit + FLASH + 0.02, total)},{pct(refill_start, total)}{{fill:{empty}}}"
+                f"{pct(refill_end, total)},100%{{fill:{colour}}}}}"
                 f".{name}{{animation-name:{name}}}"
             )
             body.append(f'<rect class="c a {name}" x="{x}" y="{y}" fill="{colour}"/>')
@@ -188,17 +217,26 @@ def render(grid, theme):
             f'fill="{pal["bullet"]}" opacity="0"/>'
         )
 
-    # Ship path: hold, sweep, fly off, then jump back to the start
-    frames = [f"{pct(t, total)}{{transform:translateX({x:.1f}px)}}" for t, x in stops]
-    frames.append(f"100%{{transform:translateX({ship_x(COLS + 1):.1f}px)}}")
-    css.append("@keyframes ship{" + "".join(frames) + "}.ship{animation-name:ship}")
+    # Ship path: hold, sweep, drift around the grid back to the start
+    frames = [
+        f"{pct(t, total)}{{transform:translate({x:.1f}px,{y:.1f}px) rotate({a}deg);"
+        f"animation-timing-function:{e}}}"
+        for t, x, y, a, e in stops
+    ]
+    css.append(
+        "@keyframes ship{" + "".join(frames) + "}"
+        ".ship{animation-name:ship;transform-box:fill-box;transform-origin:center}"
+    )
     pixels = "".join(
-        f'<rect x="{i * PX}" y="{SHIP_Y + j * PX}" width="{PX}" height="{PX}"/>'
+        f'<rect x="{i * PX}" y="{j * PX}" width="{PX}" height="{PX}"/>'
         for j, row in enumerate(SHIP)
         for i, ch in enumerate(row)
         if ch == "#"
     )
-    body.append(f'<g class="a ship" fill="{pal["ship"]}">{pixels}</g>')
+    body.append(
+        f'<g class="a ship" fill="{pal["ship"]}" '
+        f'transform="translate({LEFT_X} {SHIP_Y})">{pixels}</g>'
+    )
 
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
