@@ -102,6 +102,16 @@ Data engineer working in financial services (insurance, fintech and multi-financ
 | [**ulauncher-pomodoro**](https://github.com/yyoel/ulauncher-pomodoro) | A full-featured Pomodoro timer extension for Ulauncher with focus and break cycles, desktop notifications, and audio alerts. | Python | 2026-08-21 |
 <!--END_PROJECTS-->
 
+## 👾 Contributions under attack
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/yyoel/yyoel/output/space-invaders-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/yyoel/yyoel/output/space-invaders.svg" />
+    <img alt="A space ship shooting my GitHub contribution graph" src="https://raw.githubusercontent.com/yyoel/yyoel/output/space-invaders.svg" />
+  </picture>
+</p>
+
 ## 🤝 Let's connect
 
 Always happy to talk data engineering, pipelines or Spark war stories. Reach me on [LinkedIn](https://www.linkedin.com/in/yulius-yoel/) or [email](mailto:yoelyulius@gmail.com).
